@@ -28,9 +28,28 @@ import views.html.components.dashboard.payment_history_section
 
 class PaymentHistorySectionSpec extends SpecBase {
 
-  "payment_history_section" - {
+  "payment_history_section should" - {
 
-    "should produce the expected table contents" in new Setup() {
+    "render inset text elements when there are paid and cancelled payments" in new Setup() {
+      val result: Document = view(summaryModel, tableRef)
+
+      result.select("h2").text() mustBe "Payment history"
+      result.select(".govuk-inset-text:nth-of-type(1)").text() mustBe
+        "We cancelled 1 of your payments. For more information, contact us (opens in new tab)."
+      result.select(".govuk-inset-text:nth-of-type(2)").text() mustBe
+        "Payments with the Paid status will be in the bank account you provided within 7 working days."
+    }
+
+    "render no inset text, and a separate information paragraph if there is no payment history" in new Setup() {
+      val summary: LeppSummary = summaryModel.copy(paidItems = None, cancelledItems = None)
+      val result: Document = view(summary, tableRef)
+
+      result.select("h2").text() mustBe "Payment history"
+      result.select(".govuk-inset-text").size() mustBe 0
+      result.select(".govuk-body").text() mustBe "You do not have any previous payments."
+    }
+
+    "render the expected table contents" in new Setup() {
       val result: Document = view(summaryModel, tableRef)
       result.getElementById(s"${tableRef}_header_taxYear").text() mustBe "Tax year"
       result.getElementById(s"${tableRef}_header_amount").text() mustBe "Amount"
